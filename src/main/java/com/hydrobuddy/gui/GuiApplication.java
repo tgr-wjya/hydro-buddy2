@@ -37,7 +37,15 @@ public class GuiApplication extends Application {
         primaryStage.setTitle("Hydrobuddy");
         primaryStage.setScene(scene);
 
-        // 5. Show the window
+        // 5. THIS IS THE NEW PART: Add a shutdown hook
+        // Tell the app what to do when the "X" button is clicked.
+        primaryStage.setOnCloseRequest(event -> {
+            System.out.println("Window closing, shutting down service...");
+            com.hydrobuddy.core.ReminderService.getInstance().shutdown();
+            javafx.application.Platform.exit();
+        });
+
+        // 6. Show the window here
         primaryStage.show();
     }
 }
