@@ -49,19 +49,30 @@ public class ReminderService {
      * @param interval  The time, in minutes, between reminders
      */
     public void start(Runnable task, long interval) {
+        // Delegate to the TimeUnit overload for testability
+        start(task, interval, TimeUnit.MINUTES);
+    }
+
+    /**
+     * Starts the reminder task with a custom time unit.
+     * This overload exists primarily to enable fast unit testing.
+     *
+     * @param task  The code to run
+     * @param interval the interval value
+     * @param unit the interval unit
+     */
+    public void start(Runnable task, long interval, TimeUnit unit) {
         if (isRunning()) {
             System.out.println("Service is already running. Stopping first.");
             stop();
-        }
+    }
 
-        System.out.println("Starting service. Interval: " + interval + " minutes.");
-        // This is the core timer logic:
-        // It runs the 'task' repeatedly with a 'interval' delay
+        System.out.println("Starting service. Interval: " + interval + " " + unit + ".");
         this.reminderTaskHandle = scheduler.scheduleAtFixedRate(
                 task, // The task to run
                 0, // Initial delat (start immediately)
                 interval, // Time between runs
-                TimeUnit.MINUTES // Unit of time
+                unit // Unit of time
         );
     }
 
@@ -93,5 +104,10 @@ public class ReminderService {
     public void shutdown() {
         System.out.println("Shutting down scheduler.");
         this.scheduler.shutdown();
+        // Best-effort: clear any handle
+        if (reminderTaskHandle != null) {
+            reminderTaskHandle.cancel(true);
+            reminderTaskHandle = null;
+        }
     }
 }
